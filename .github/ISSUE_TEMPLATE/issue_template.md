@@ -1,6 +1,6 @@
 ---
-name: "📝 Default Issue Template"
-about: "모든 종류의 이슈를 등록할 때 사용합니다."
+name: "Open a new issue"
+about: "Report a bug, request a feature, or ask a question."
 title: ""
 labels: ''
 ---

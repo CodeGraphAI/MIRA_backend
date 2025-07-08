@@ -1,0 +1,17 @@
+name: Auto Assign Reviewer
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+jobs:
+  auto-assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign reviewer
+        uses: kentaro-m/auto-assign-action@v2
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          reviewers: |
+            LeeHyunWoo02
+            gepetton
