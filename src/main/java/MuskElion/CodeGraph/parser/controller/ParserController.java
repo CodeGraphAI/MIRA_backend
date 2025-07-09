@@ -21,7 +21,6 @@ public class ParserController {
 
     @PostMapping("/parse")
     public ResponseEntity<String> receiveParseResult(@RequestBody ParseResult parseResult) {
-        // Basic validation (can be enhanced with @Valid and custom validators)
         if (parseResult == null || parseResult.getFilePath() == null || parseResult.getLanguage() == null || parseResult.getRootNode() == null) {
             return new ResponseEntity<>("Invalid parse result: filePath, language, and rootNode are required.", HttpStatus.BAD_REQUEST);
         }
@@ -31,7 +30,6 @@ public class ParserController {
         if (success) {
             return new ResponseEntity<>("Parse result for '" + parseResult.getFilePath() + "' received and processed successfully.", HttpStatus.OK);
         } else {
-            // In a real application, you might return more specific error details
             return new ResponseEntity<>("Failed to process parse result for '" + parseResult.getFilePath() + "'. See server logs for details.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

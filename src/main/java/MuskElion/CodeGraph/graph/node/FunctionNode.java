@@ -3,6 +3,9 @@ package MuskElion.CodeGraph.graph.node;
 import MuskElion.CodeGraph.graph.relationship.CallsRelationship;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.neo4j.core.schema.*;
 
 import java.util.List;
@@ -12,7 +15,10 @@ import java.util.List;
  */
 @Data
 @Builder
+@Setter
+@Getter
 @Node("Function")
+@EqualsAndHashCode(of = "id")
 public class FunctionNode {
 
     @Id
