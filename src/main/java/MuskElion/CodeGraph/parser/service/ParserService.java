@@ -11,9 +11,8 @@ public class ParserService {
             // This is where the business logic for processing parse results will go.
             // For example, saving to Neo4j, triggering MCP events, etc.
             // TODO: Implement actual processing logic (e.g., save to Neo4j)
-            return true; // Assume success for now
+            return true;
         } catch (Exception e) {
-            // Log the exception for debugging purposes
             System.err.println("Error processing parse result for file " + parseResult.getFilePath() + ": " + e.getMessage());
             return false; // Indicate failure
         }
