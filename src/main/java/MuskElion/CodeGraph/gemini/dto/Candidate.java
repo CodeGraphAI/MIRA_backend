@@ -1,6 +1,7 @@
 package MuskElion.CodeGraph.gemini.dto;
 
-import java.util.List;
+import lombok.Getter;
+
 
 /**
  * 모델의 생성 결과 한 건을 나타내는 DTO
@@ -8,6 +9,7 @@ import java.util.List;
  * index : 결과 순번
  * finishReason : 완료 사유
  * */
+@Getter
 public class Candidate {
     private Content content;
     private String finishReason;
