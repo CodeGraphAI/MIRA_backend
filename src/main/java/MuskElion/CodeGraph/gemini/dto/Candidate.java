@@ -1,5 +1,6 @@
 package MuskElion.CodeGraph.gemini.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 
@@ -10,6 +11,7 @@ import lombok.Getter;
  * finishReason : 완료 사유
  * */
 @Getter
+@AllArgsConstructor
 public class Candidate {
     private Content content;
     private String finishReason;
