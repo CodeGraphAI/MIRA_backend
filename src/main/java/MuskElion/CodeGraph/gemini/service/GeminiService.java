@@ -10,9 +10,8 @@ import java.util.Optional;
 
 @Service
 public class GeminiService {
-    public static final String GEMINI_PRO = "gemini-pro";
-    public static final String GEMINI_ULTIMATE = "gemini-ultimate";
-    public static final String GEMINI_PRO_VISION = "gemini-pro-vision";
+    public static final String GEMINI_FLASH = "gemini-1.5-flash";
+    public static final String GEMINI_PRO = "gemini-1.5-pro";
 
     private final GeminiInterface geminiInterface;
 
@@ -22,7 +21,7 @@ public class GeminiService {
     }
 
     private GeminiResponseDTO getCompletion(GeminiRequestDTO request){
-        return geminiInterface.getCompletion(GEMINI_PRO,request);
+        return geminiInterface.getCompletion(GEMINI_FLASH,request);
     }
 
     public String getCompletion(String text){
