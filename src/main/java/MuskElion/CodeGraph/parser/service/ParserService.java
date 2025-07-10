@@ -1,19 +1,29 @@
 package MuskElion.CodeGraph.parser.service;
 
+import MuskElion.CodeGraph.graph.service.GraphService;
 import MuskElion.CodeGraph.parser.dto.ParseResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ParserService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ParserService.class);
+    private final GraphService graphService;
+
+    public ParserService(GraphService graphService) {
+        this.graphService = graphService;
+    }
+
     public boolean processParseResult(ParseResult parseResult) {
         try {
-            // This is where the business logic for processing parse results will go.
-            // For example, saving to Neo4j, triggering MCP events, etc.
-            // TODO: Implement actual processing logic (e.g., save to Neo4j)
+            logger.info("Processing parse result for file: {}", parseResult.getFilePath());
+            graphService.saveParsedResult(parseResult);
+            logger.info("Successfully processed parse result for file: {}", parseResult.getFilePath());
             return true;
         } catch (Exception e) {
-            System.err.println("Error processing parse result for file " + parseResult.getFilePath() + ": " + e.getMessage());
+            logger.error("Error processing parse result for file {}: ", parseResult.getFilePath(), e);
             return false; // Indicate failure
         }
     }

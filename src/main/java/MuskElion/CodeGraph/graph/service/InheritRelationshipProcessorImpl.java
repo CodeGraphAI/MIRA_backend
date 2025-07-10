@@ -34,7 +34,6 @@ public class InheritRelationshipProcessorImpl implements InheritRelationshipProc
             parentClass = parentClassOpt.get();
         } else {
             parentClass = ClassNode.builder()
-                    .id(java.util.UUID.randomUUID().toString())
                     .name(parentClassName)
                     .build();
             classNodeRepository.save(parentClass);

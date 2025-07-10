@@ -23,7 +23,7 @@ public class FunctionNode {
 
     @Id
     @GeneratedValue
-    private String id;
+    private Long id;
 
     /**
      * 함수의 이름입니다.

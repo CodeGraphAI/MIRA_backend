@@ -22,7 +22,7 @@ public class ClassNode {
 
     @Id
     @GeneratedValue
-    private String id; // ID
+    private Long id; // ID
 
     @Property("name")
     private String name; // 이름

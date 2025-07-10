@@ -10,7 +10,7 @@ import MuskElion.CodeGraph.parser.dto.AstNode;
 import MuskElion.CodeGraph.parser.dto.ParseResult;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
+
 
 /**
  * AST 노드를 그래프 노드 및 관계로 매핑하는 구현체.
@@ -21,7 +21,7 @@ public class AstToGraphMapperImpl implements AstToGraphMapper {
     @Override
     public ModuleNode mapToModuleNode(ParseResult parseResult) {
         return ModuleNode.builder()
-                .id(UUID.randomUUID().toString())
+                
                 .filePath(parseResult.getFilePath())
                 .language(parseResult.getLanguage())
                 .name(extractModuleName(parseResult.getFilePath()))
@@ -36,7 +36,7 @@ public class AstToGraphMapperImpl implements AstToGraphMapper {
         int endLine = classAstNode.getEndPosition().getRow();
 
         return ClassNode.builder()
-                .id(UUID.randomUUID().toString())
+                
                 .name(className)
                 .filePath(filePath)
                 .startLine(startLine)
@@ -52,7 +52,7 @@ public class AstToGraphMapperImpl implements AstToGraphMapper {
         int endLine = functionAstNode.getEndPosition().getRow();
 
         return FunctionNode.builder()
-                .id(UUID.randomUUID().toString())
+                
                 .name(functionName)
                 .filePath(filePath)
                 .startLine(startLine)
@@ -67,7 +67,7 @@ public class AstToGraphMapperImpl implements AstToGraphMapper {
         int importLine = importAstNode.getStartPosition().getRow();
 
         return ImportsRelationship.builder()
-                .id(UUID.randomUUID().toString())
+
                 .importName(importedName)
                 .lineNumber(importLine)
                 .build();
@@ -79,7 +79,7 @@ public class AstToGraphMapperImpl implements AstToGraphMapper {
         if (parentClassName == null) return null;
 
         return InheritsRelationship.builder()
-                .id(UUID.randomUUID().toString())
+                
                 .build();
     }
 
@@ -90,7 +90,7 @@ public class AstToGraphMapperImpl implements AstToGraphMapper {
         int callSiteLine = callAstNode.getStartPosition().getRow();
 
         return CallsRelationship.builder()
-                .id(UUID.randomUUID().toString())
+                
                 .callSiteLine(callSiteLine)
                 .build();
     }
