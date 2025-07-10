@@ -2,7 +2,7 @@ package MuskElion.CodeGraph.parser.controller;
 
 import MuskElion.CodeGraph.parser.dto.ParseResult;
 import MuskElion.CodeGraph.parser.service.ParserService;
-import org.springframework.http.HttpStatus; // HttpStatus import 추가
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

@@ -35,7 +35,6 @@ public class CallRelationshipProcessorImpl implements CallRelationshipProcessor 
             calledFunction = calledFunctionOpt.get();
         } else {
             calledFunction = FunctionNode.builder()
-                    .id(java.util.UUID.randomUUID().toString())
                     .name(calledFunctionName)
                     .build();
             functionNodeRepository.save(calledFunction);

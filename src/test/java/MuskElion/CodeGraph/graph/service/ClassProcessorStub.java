@@ -13,7 +13,7 @@ class ClassProcessorStub implements ClassProcessor {
     public ClassNode lastSavedClass;
     public ClassNode findOrCreate(AstNode astNode, String filePath) {
         ClassNode classNode = ClassNode.builder()
-                .id(UUID.randomUUID().toString())
+                
                 .name(astNode.getValue()) // Assuming value is the name for simplicity
                 .filePath(filePath)
                 .startLine(astNode.getStartPosition().getRow())

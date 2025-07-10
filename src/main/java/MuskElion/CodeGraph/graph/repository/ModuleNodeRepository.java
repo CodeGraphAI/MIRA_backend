@@ -10,7 +10,7 @@ import java.util.Optional;
  * ModuleNode 엔티티에 대한 데이터 접근을 처리하는 리포지토리 인터페이스입니다.
  */
 @Repository
-public interface ModuleNodeRepository extends Neo4jRepository<ModuleNode, String> {
+public interface ModuleNodeRepository extends Neo4jRepository<ModuleNode, Long> {
     /**
      * 파일 경로를 기준으로 ModuleNode를 찾습니다.
      * @param filePath 파일 경로

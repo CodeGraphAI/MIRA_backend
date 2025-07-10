@@ -24,7 +24,7 @@ public class ModuleNode {
 
     @Id
     @GeneratedValue
-    private String id;
+    private Long id;
 
     /**
      * 모듈(파일)의 절대 경로입니다.

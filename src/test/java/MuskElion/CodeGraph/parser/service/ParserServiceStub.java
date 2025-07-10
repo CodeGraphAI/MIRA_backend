@@ -1,5 +1,6 @@
 package MuskElion.CodeGraph.parser.service;
 
+import MuskElion.CodeGraph.graph.service.GraphService;
 import MuskElion.CodeGraph.parser.dto.ParseResult;
 
 /**
@@ -7,6 +8,10 @@ import MuskElion.CodeGraph.parser.dto.ParseResult;
  */
 public class ParserServiceStub extends ParserService {
     public boolean processResultToReturn = true;
+
+    public ParserServiceStub(GraphService graphService) {
+        super(graphService);
+    }
 
     @Override
     public boolean processParseResult(ParseResult parseResult) {

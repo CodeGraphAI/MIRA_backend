@@ -12,7 +12,7 @@ class FunctionProcessorStub implements FunctionProcessor {
     public FunctionNode lastSavedFunction;
     public FunctionNode findOrCreate(AstNode astNode, String filePath) {
         return FunctionNode.builder()
-                .id(UUID.randomUUID().toString())
+                
                 .name(astNode.getValue())
                 .filePath(filePath)
                 .startLine(astNode.getStartPosition().getRow())

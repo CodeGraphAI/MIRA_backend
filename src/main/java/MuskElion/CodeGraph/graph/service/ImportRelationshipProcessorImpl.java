@@ -34,7 +34,7 @@ public class ImportRelationshipProcessorImpl implements ImportRelationshipProces
             targetModule = targetModuleOpt.get();
         } else {
             targetModule = ModuleNode.builder()
-                    .id(java.util.UUID.randomUUID().toString())
+                    
                     .name(importedName)
                     .build();
             moduleNodeRepository.save(targetModule);
