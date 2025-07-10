@@ -13,7 +13,7 @@ class ModuleProcessorStub implements ModuleProcessor {
     public ModuleNode lastSavedModule;
     public ModuleNode findOrCreate(ParseResult parseResult) {
         return ModuleNode.builder()
-                .id(UUID.randomUUID().toString())
+                
                 .filePath(parseResult.getFilePath())
                 .language(parseResult.getLanguage())
                 .name(parseResult.getFilePath().substring(parseResult.getFilePath().lastIndexOf('/') + 1, parseResult.getFilePath().lastIndexOf('.')))

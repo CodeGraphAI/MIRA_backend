@@ -1,5 +1,6 @@
 package MuskElion.CodeGraph.parser.controller;
 
+import MuskElion.CodeGraph.graph.service.GraphService; // GraphService import 추가
 import MuskElion.CodeGraph.parser.dto.ParseResult;
 import MuskElion.CodeGraph.parser.dto.AstNode;
 import MuskElion.CodeGraph.parser.service.ParserServiceStub;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.mockito.Mockito; // Mockito import 추가
 
 import java.util.Collections;
 
@@ -20,10 +22,12 @@ class ParserControllerTest {
 
     private ParserController parserController;
     private ParserServiceStub parserServiceStub;
+    private GraphService mockGraphService; // Mock 객체 선언
 
     @BeforeEach
     void setUp() {
-        parserServiceStub = new ParserServiceStub();
+        mockGraphService = Mockito.mock(GraphService.class); // Mock 객체 초기화
+        parserServiceStub = new ParserServiceStub(mockGraphService); // GraphService Mock 주입
         parserController = new ParserController(parserServiceStub);
     }
 

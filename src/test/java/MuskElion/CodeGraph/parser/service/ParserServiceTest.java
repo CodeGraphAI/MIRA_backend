@@ -1,13 +1,18 @@
 package MuskElion.CodeGraph.parser.service;
 
-import MuskElion.CodeGraph.parser.dto.ParseResult;
 import MuskElion.CodeGraph.parser.dto.AstNode;
+import MuskElion.CodeGraph.parser.dto.ParseResult;
+import MuskElion.CodeGraph.graph.service.GraphService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito; // Mockito import 추가
 
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any; // any() 메서드 import
+import static org.mockito.Mockito.doNothing; // doNothing() 메서드 import
+import static org.mockito.Mockito.doThrow; // doThrow() 메서드 import
 
 /**
  * ParserService 테스트 클래스.
@@ -15,18 +20,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ParserServiceTest {
 
     private ParserService parserService;
+    private GraphService mockGraphService; // Mock 객체 선언
 
     @BeforeEach
     void setUp() {
-        parserService = new ParserService();
+        mockGraphService = Mockito.mock(GraphService.class); // Mock 객체 초기화
+        parserService = new ParserService(mockGraphService);
     }
 
     @Test
-    void testProcessParseResult_success() {
+    void testProcessParseResult_success() throws Exception {
         // Given
         AstNode.Position pos = new AstNode.Position(1, 1);
         AstNode rootNode = new AstNode("program", null, pos, pos, Collections.emptyList());
         ParseResult parseResult = new ParseResult("/path/to/test.java", "java", rootNode);
+
+        // mockGraphService.saveParsedResult가 호출될 때 아무것도 하지 않도록 설정
+        doNothing().when(mockGraphService).saveParsedResult(any(ParseResult.class));
 
         // When
         boolean result = parserService.processParseResult(parseResult);
@@ -36,19 +46,19 @@ class ParserServiceTest {
     }
 
     @Test
-    void testProcessParseResult_failure() {
+    void testProcessParseResult_failure() throws Exception {
         // Given
-        // 실제 구현에서 예외를 발생시킬 시나리오 시뮬레이션
-        // 현재 스텁 구현에서는 직접적인 실패를 유발할 수 없습니다.
-        // 이 테스트 케이스는 향후 구현을 위한 것입니다.
-        ParseResult parseResult = new ParseResult("/path/to/invalid.java", "java", null); // null rootNode 전달 시 나중에 문제 발생 가능
+        AstNode.Position pos = new AstNode.Position(1, 1);
+        AstNode rootNode = new AstNode("program", null, pos, pos, Collections.emptyList());
+        ParseResult parseResult = new ParseResult("/path/to/invalid.java", "java", rootNode);
+
+        // mockGraphService.saveParsedResult 호출 시 예외를 발생시키도록 설정
+        doThrow(new RuntimeException("Simulated GraphService error")).when(mockGraphService).saveParsedResult(any(ParseResult.class));
 
         // When
         boolean result = parserService.processParseResult(parseResult);
 
         // Then
-        // 현재 스텁 구현에서는 항상 true를 반환합니다.
-        // 실제 오류 처리가 구현되면 이 단언은 업데이트되어야 합니다.
-        assertTrue(result, "현재 스텁된 processParseResult는 항상 true를 반환합니다.");
+        assertTrue(!result, "processParseResult는 실패 시 false를 반환해야 합니다.");
     }
 }
