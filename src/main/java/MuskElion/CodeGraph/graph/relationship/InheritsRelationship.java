@@ -15,7 +15,7 @@ public class InheritsRelationship {
 
     @Id
     @GeneratedValue
-    private String id;
+    private Long id;
 
     /**
      * 상속하는 부모 클래스(타겟 노드)입니다.

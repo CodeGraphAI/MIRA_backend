@@ -31,6 +31,13 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
+    - name: Create env.properties file
+      run: |
+        mkdir -p src/main/resources/env.properties
+        echo "NEO4J_URI=${{secrets.NEO4J_URI}}" >> env.properties
+        echo "NEO4J_USERNAME=${{secrets.NEO4J_USERNAME}}" >> env.properties
+        echo "NEO4J_PASSWORD=${{secrets.NEO4J_PASSWORD}}" >> env.properties
+        echo "GEMINI_API_KEY=${{secrets.GEMINI_API_KEY}}" >> env.properties
 
 
   dependency-submission:

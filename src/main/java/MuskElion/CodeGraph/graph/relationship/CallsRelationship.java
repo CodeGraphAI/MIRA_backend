@@ -16,7 +16,7 @@ public class CallsRelationship {
 
     @Id
     @GeneratedValue
-    private String id;
+    private Long id;
 
     /**
      * 호출되는 함수(타겟 노드)입니다.

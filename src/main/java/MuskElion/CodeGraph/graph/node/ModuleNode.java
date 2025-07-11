@@ -1,9 +1,14 @@
 package MuskElion.CodeGraph.graph.node;
 
+import MuskElion.CodeGraph.graph.relationship.ImportsRelationship;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.neo4j.core.schema.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,12 +16,15 @@ import java.util.List;
  */
 @Data
 @Builder
+@Setter
+@Getter
 @Node("Module")
+@EqualsAndHashCode(of = "id")
 public class ModuleNode {
 
     @Id
     @GeneratedValue
-    private String id;
+    private Long id;
 
     /**
      * 모듈(파일)의 절대 경로입니다.
@@ -47,4 +55,28 @@ public class ModuleNode {
      */
     @Relationship(type = "DEFINES_FUNCTION", direction = Relationship.Direction.OUTGOING)
     private List<FunctionNode> definedFunctions;
+
+    /**
+     * 이 모듈이 임포트하는 다른 모듈과의 관계 리스트입니다.
+     */
+    @Relationship(type = "IMPORTS", direction = Relationship.Direction.OUTGOING)
+    private List<ImportsRelationship> imports;
+
+    public void addDefinedClass(ClassNode classNode) {
+        if (this.definedClasses == null) {
+            this.definedClasses = new ArrayList<>();
+        }
+        if (!this.definedClasses.contains(classNode)) {
+            this.definedClasses.add(classNode);
+        }
+    }
+
+    public void addDefinedFunction(FunctionNode functionNode) {
+        if (this.definedFunctions == null) {
+            this.definedFunctions = new ArrayList<>();
+        }
+        if (!this.definedFunctions.contains(functionNode)) {
+            this.definedFunctions.add(functionNode);
+        }
+    }
 }

@@ -3,55 +3,52 @@ package MuskElion.CodeGraph.graph.node;
 import MuskElion.CodeGraph.graph.relationship.InheritsRelationship;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.neo4j.core.schema.*;
 
 import java.util.List;
+import java.util.ArrayList;
 
-/**
- * Neo4j에 저장될 클래스 노드를 나타내는 엔티티 클래스입니다.
- */
+/** 클래스 노드 */
 @Data
 @Builder
+@Setter
+@Getter
 @Node("Class")
+@EqualsAndHashCode(of = "id")
 public class ClassNode {
 
     @Id
     @GeneratedValue
-    private String id;
+    private Long id; // ID
 
-    /**
-     * 클래스의 이름입니다.
-     */
     @Property("name")
-    private String name;
+    private String name; // 이름
 
-    /**
-     * 클래스가 정의된 파일의 경로입니다.
-     */
     @Property("file_path")
-    private String filePath;
+    private String filePath; // 파일 경로
 
-    /**
-     * 클래스 정의가 시작되는 라인 번호입니다.
-     */
     @Property("start_line")
-    private int startLine;
+    private int startLine; // 시작 라인
 
-    /**
-     * 클래스 정의가 끝나는 라인 번호입니다.
-     */
     @Property("end_line")
-    private int endLine;
+    private int endLine; // 끝 라인
 
-    /**
-     * 이 클래스가 상속하는 다른 클래스와의 관계 리스트입니다.
-     */
     @Relationship(type = "INHERITS", direction = Relationship.Direction.OUTGOING)
-    private List<InheritsRelationship> inherits;
+    private List<InheritsRelationship> inherits; // 상속 관계
 
-    /**
-     * 이 클래스 내에 정의된 함수(메서드) 노드들의 리스트입니다.
-     */
     @Relationship(type = "DEFINES_FUNCTION", direction = Relationship.Direction.OUTGOING)
-    private List<FunctionNode> definedFunctions;
+    private List<FunctionNode> definedFunctions; // 정의된 함수 목록
+
+    // 함수 추가
+    public void addDefinedFunction(FunctionNode functionNode) {
+        if (this.definedFunctions == null) {
+            this.definedFunctions = new ArrayList<>();
+        }
+        if (!this.definedFunctions.contains(functionNode)) {
+            this.definedFunctions.add(functionNode);
+        }
+    }
 }

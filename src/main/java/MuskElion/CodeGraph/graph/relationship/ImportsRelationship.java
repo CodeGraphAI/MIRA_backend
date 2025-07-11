@@ -15,7 +15,7 @@ public class ImportsRelationship {
 
     @Id
     @GeneratedValue
-    private String id;
+    private Long id;
 
     /**
      * 임포트되는 모듈(타겟 노드)입니다.
