@@ -3,8 +3,11 @@ package MuskElion.CodeGraph.graph.service;
 import MuskElion.CodeGraph.graph.node.ClassNode;
 import MuskElion.CodeGraph.graph.node.FunctionNode;
 import MuskElion.CodeGraph.graph.node.ModuleNode;
+import MuskElion.CodeGraph.mcp.McpContextMessage;
+import MuskElion.CodeGraph.mcp.service.McpPublishService;
 import MuskElion.CodeGraph.parser.dto.AstNode;
 import MuskElion.CodeGraph.parser.dto.ParseResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,8 +25,11 @@ public class GraphServiceImpl implements GraphService {
     private final ImportRelationshipProcessor importRelationshipProcessor;
     private final InheritRelationshipProcessor inheritRelationshipProcessor;
     private final CallRelationshipProcessor callRelationshipProcessor;
+    private final McpPublishService mcpPublishService;
+    private final ObjectMapper objectMapper;
     private final AstToGraphMapper astToGraphMapper;
 
+    // 생성자: 필요한 프로세서와 서비스들을 주입받습니다.
     public GraphServiceImpl(
             ModuleProcessor moduleProcessor,
             ClassProcessor classProcessor,
@@ -31,7 +37,9 @@ public class GraphServiceImpl implements GraphService {
             ImportRelationshipProcessor importRelationshipProcessor,
             InheritRelationshipProcessor inheritRelationshipProcessor,
             CallRelationshipProcessor callRelationshipProcessor,
-            AstToGraphMapper astToGraphMapper) {
+            AstToGraphMapper astToGraphMapper,
+            McpPublishService mcpPublishService,
+            ObjectMapper objectMapper) {
         this.moduleProcessor = moduleProcessor;
         this.classProcessor = classProcessor;
         this.functionProcessor = functionProcessor;
@@ -39,9 +47,11 @@ public class GraphServiceImpl implements GraphService {
         this.inheritRelationshipProcessor = inheritRelationshipProcessor;
         this.callRelationshipProcessor = callRelationshipProcessor;
         this.astToGraphMapper = astToGraphMapper;
+        this.mcpPublishService = mcpPublishService;
+        this.objectMapper = objectMapper;
     }
 
-    // Enum for AST node types to avoid magic strings
+    // AST 노드 타입을 위한 Enum (매직 스트링 방지)
     private enum AstNodeType {
         PROGRAM("program"),
         CLASS_DECLARATION("class_declaration"),
@@ -68,11 +78,40 @@ public class GraphServiceImpl implements GraphService {
 
     @Override
     @Transactional
+    // 파싱 결과를 그래프에 저장하고 MCP 이벤트를 발행합니다.
     public void saveParsedResult(ParseResult parseResult) {
-        ModuleNode moduleNode = moduleProcessor.findOrCreate(parseResult);
-        processAstNode(parseResult.getRootNode(), moduleNode, parseResult.getFilePath());
+        String filePath = parseResult.getFilePath();
+        String status = "success";
+        try {
+            ModuleNode moduleNode = moduleProcessor.findOrCreate(parseResult);
+            processAstNode(parseResult.getRootNode(), moduleNode, filePath);
+        } catch (Exception e) {
+            status = "failed";
+            throw e; // 예외 발생 시 상태를 실패로 변경 후 다시 던집니다.
+        } finally {
+            try {
+                // MCP 메시지 페이로드 생성
+                java.util.Map<String, String> payloadMap = new java.util.HashMap<>();
+                payloadMap.put("filePath", filePath);
+                payloadMap.put("status", status);
+                String payload = objectMapper.writeValueAsString(payloadMap);
+                
+                // MCP 메시지 발행
+                McpContextMessage message = new McpContextMessage(
+                        "GRAPH_UPDATED",
+                        "GraphService",
+                        "All", // 모든 구독자에게 전송
+                        payload,
+                        System.currentTimeMillis()
+                );
+                mcpPublishService.publish(message);
+            } catch (Exception e) {
+                // MCP 메시지 발행 실패는 주 트랜잭션에 영향을 주지 않습니다.
+            }
+        }
     }
 
+    // AST 노드를 처리하여 그래프에 반영합니다.
     private void processAstNode(AstNode astNode, Object parentNode, String filePath) {
         if (astNode == null) {
             return;
@@ -89,6 +128,7 @@ public class GraphServiceImpl implements GraphService {
         }
     }
 
+    // 클래스 노드를 처리합니다.
     private void processClassNode(AstNode astNode, Object parentNode, String filePath) {
         ClassNode classNode = classProcessor.findOrCreate(astNode, filePath);
         classNode.setStartLine(astNode.getStartPosition().getRow());
@@ -112,6 +152,7 @@ public class GraphServiceImpl implements GraphService {
         }
     }
 
+    // 함수 노드를 처리합니다.
     private void processFunctionNode(AstNode astNode, Object parentNode, String filePath) {
         FunctionNode functionNode = functionProcessor.findOrCreate(astNode, filePath);
         functionNode.setStartLine(astNode.getStartPosition().getRow());
@@ -124,7 +165,6 @@ public class GraphServiceImpl implements GraphService {
             classNode.addDefinedFunction(functionNode);
             classProcessor.save(classNode);
         }
-
         functionProcessor.save(functionNode);
 
         if (astNode.getChildren() != null) {
@@ -138,12 +178,14 @@ public class GraphServiceImpl implements GraphService {
         }
     }
 
+    // 임포트 노드를 처리합니다.
     private void processImportNode(AstNode astNode, Object parentNode, String filePath) {
         if (parentNode instanceof ModuleNode moduleNode) {
             importRelationshipProcessor.process(astNode, moduleNode, filePath);
         }
     }
 
+    // 자식 노드들을 재귀적으로 처리합니다.
     private void processChildren(AstNode astNode, Object parentNode, String filePath) {
         if (astNode.getChildren() != null) {
             for (AstNode child : astNode.getChildren()) {
