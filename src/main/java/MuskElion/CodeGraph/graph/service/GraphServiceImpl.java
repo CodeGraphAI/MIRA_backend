@@ -3,8 +3,11 @@ package MuskElion.CodeGraph.graph.service;
 import MuskElion.CodeGraph.graph.node.ClassNode;
 import MuskElion.CodeGraph.graph.node.FunctionNode;
 import MuskElion.CodeGraph.graph.node.ModuleNode;
+import MuskElion.CodeGraph.mcp.McpContextMessage;
+import MuskElion.CodeGraph.mcp.service.McpPublishService;
 import MuskElion.CodeGraph.parser.dto.AstNode;
 import MuskElion.CodeGraph.parser.dto.ParseResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +25,8 @@ public class GraphServiceImpl implements GraphService {
     private final ImportRelationshipProcessor importRelationshipProcessor;
     private final InheritRelationshipProcessor inheritRelationshipProcessor;
     private final CallRelationshipProcessor callRelationshipProcessor;
+    private final McpPublishService mcpPublishService;
+    private final ObjectMapper objectMapper;
     private final AstToGraphMapper astToGraphMapper;
 
     public GraphServiceImpl(
@@ -31,7 +36,9 @@ public class GraphServiceImpl implements GraphService {
             ImportRelationshipProcessor importRelationshipProcessor,
             InheritRelationshipProcessor inheritRelationshipProcessor,
             CallRelationshipProcessor callRelationshipProcessor,
-            AstToGraphMapper astToGraphMapper) {
+            AstToGraphMapper astToGraphMapper,
+            McpPublishService mcpPublishService,
+            ObjectMapper objectMapper) {
         this.moduleProcessor = moduleProcessor;
         this.classProcessor = classProcessor;
         this.functionProcessor = functionProcessor;
@@ -39,6 +46,8 @@ public class GraphServiceImpl implements GraphService {
         this.inheritRelationshipProcessor = inheritRelationshipProcessor;
         this.callRelationshipProcessor = callRelationshipProcessor;
         this.astToGraphMapper = astToGraphMapper;
+        this.mcpPublishService = mcpPublishService;
+        this.objectMapper = objectMapper;
     }
 
     // Enum for AST node types to avoid magic strings
@@ -69,8 +78,33 @@ public class GraphServiceImpl implements GraphService {
     @Override
     @Transactional
     public void saveParsedResult(ParseResult parseResult) {
-        ModuleNode moduleNode = moduleProcessor.findOrCreate(parseResult);
-        processAstNode(parseResult.getRootNode(), moduleNode, parseResult.getFilePath());
+        String filePath = parseResult.getFilePath();
+        String status = "success";
+        try {
+            ModuleNode moduleNode = moduleProcessor.findOrCreate(parseResult);
+            processAstNode(parseResult.getRootNode(), moduleNode, filePath);
+        } catch (Exception e) {
+            status = "failed";
+            throw e; // Re-throw the exception after setting status
+        } finally {
+            try {
+                java.util.Map<String, String> payloadMap = new java.util.HashMap<>();
+                payloadMap.put("filePath", filePath);
+                payloadMap.put("status", status);
+                String payload = objectMapper.writeValueAsString(payloadMap);
+                McpContextMessage message = new McpContextMessage(
+                        "GRAPH_UPDATED",
+                        "GraphService",
+                        "All", // Or a specific target if known
+                        payload,
+                        System.currentTimeMillis()
+                );
+                mcpPublishService.publish(message);
+            } catch (Exception e) {
+                // Log error if MCP message publishing fails
+                // This should not prevent the main transaction from completing or rolling back
+            }
+        }
     }
 
     private void processAstNode(AstNode astNode, Object parentNode, String filePath) {

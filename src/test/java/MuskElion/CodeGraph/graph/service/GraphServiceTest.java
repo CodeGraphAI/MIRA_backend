@@ -4,6 +4,8 @@ import MuskElion.CodeGraph.parser.dto.AstNode;
 import MuskElion.CodeGraph.parser.dto.ParseResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +24,7 @@ class GraphServiceTest {
     private ImportRelationshipProcessorStub importRelationshipProcessor;
     private InheritRelationshipProcessorStub inheritRelationshipProcessor;
     private CallRelationshipProcessorStub callRelationshipProcessor;
+    private McpPublishServiceStub mcpPublishService;
 
     private ParseResult sampleParseResult;
 
@@ -35,6 +38,8 @@ class GraphServiceTest {
         inheritRelationshipProcessor = new InheritRelationshipProcessorStub();
         callRelationshipProcessor = new CallRelationshipProcessorStub();
         AstToGraphMapperStub astToGraphMapper = new AstToGraphMapperStub();
+        mcpPublishService = new McpPublishServiceStub();
+        ObjectMapper objectMapper = new ObjectMapper(); // 테스트용 ObjectMapper 인스턴스 생성
 
         // GraphServiceImpl에 스텁 주입
         graphService = new GraphServiceImpl(
@@ -44,7 +49,9 @@ class GraphServiceTest {
                 importRelationshipProcessor,
                 inheritRelationshipProcessor,
                 callRelationshipProcessor,
-                astToGraphMapper
+                astToGraphMapper,
+                mcpPublishService,
+                objectMapper // ObjectMapper 주입
         );
 
         // 샘플 ParseResult 생성
@@ -104,5 +111,22 @@ class GraphServiceTest {
         assertTrue(importRelationshipProcessor.processCalled, "임포트 관계 프로세서가 호출되어야 합니다.");
         assertTrue(inheritRelationshipProcessor.processCalled, "상속 관계 프로세서가 호출되어야 합니다.");
         assertTrue(callRelationshipProcessor.processCalled, "호출 관계 프로세서가 호출되어야 합니다.");
+
+        // MCP 메시지 발행 확인
+        assertTrue(mcpPublishService.publishCalled, "MCP 메시지가 발행되어야 합니다.");
+        assertNotNull(mcpPublishService.lastPublishedMessage, "발행된 MCP 메시지가 null이 아니어야 합니다.");
+        assertEquals("GRAPH_UPDATED", mcpPublishService.lastPublishedMessage.getEventType(), "이벤트 타입이 GRAPH_UPDATED여야 합니다.");
+        assertEquals("GraphService", mcpPublishService.lastPublishedMessage.getSourceModel(), "소스 모델이 GraphService여야 합니다.");
+
+        // 페이로드 내용 검증
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            java.util.Map<String, String> payloadMap = objectMapper.readValue(mcpPublishService.lastPublishedMessage.getPayload(), new TypeReference<>() {
+            });
+            assertEquals(sampleParseResult.getFilePath(), payloadMap.get("filePath"), "페이로드의 파일 경로가 일치해야 합니다.");
+            assertEquals("success", payloadMap.get("status"), "페이로드의 상태가 success여야 합니다.");
+        } catch (Exception e) {
+            fail("MCP 페이로드 파싱 중 오류 발생: " + e.getMessage());
+        }
     }
 }
